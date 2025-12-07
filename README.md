@@ -22,7 +22,7 @@ Back of the original board:
 | R4 | 10k 0603 |
 | R5 | 10k 0603 |
 | R6 | 100R 0603 |
-| U1 | ESP32-C3 SuperMini |
+| U1 | ESP32-C3 SuperMini (must be one with onboard flash)|
 | J1 | S4B-PH-K-S |
 
 ## ESPHome
