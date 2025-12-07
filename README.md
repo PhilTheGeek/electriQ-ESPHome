@@ -32,7 +32,7 @@ There are 3 bitmask bytes which I've left in. I've never seen them change. Data 
 
 ## New board
 
-Gerbers in the gerber folder and the board will end up looking a bit like this (I've rotated Q2 and R4 to align with the other components since building this board).
+Gerbers in the gerber folder and the board will end up looking a bit like this (I've rotated Q2 and R4 to align with the other components since building this board). I added the JST connector for ease but the solder header could be transferred from the original board.
 
 ![alt text](https://github.com/PhilTheGeek/electriq-ESPHome/blob/main/pictures/Board%20Front.jpeg?raw=true)
 
