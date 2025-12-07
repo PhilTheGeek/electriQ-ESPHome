@@ -1,0 +1,303 @@
+substitutions:
+
+###############################
+# Location/Site Details:
+#
+   # The site location, upon which this device is deployed. Used to populate a Text Sensor with this information.
+  site: ""
+   # Allows ESP device to be automatically lined to an 'Area' in Home Assistant. Typically used for areas such as 'Lounge Room', 'Kitchen' etc  
+  location: ""
+   # The phase in the home power supply, upon which this device is utilsed. 1p = A. 3p = A, B or C.  (myHome GPO 1 = Phase C, GPO 2 = Phase A, GPO 3 = Phase B)  
+  power_circuit: "1p"  
+
+  project_name: "electriQ eIQ-12WMINV v5"
+  project_version: "1.0"
+###############################
+# Time Update Settings:
+#
+   # Set timezone of the smart plug. Useful if the aircon is in a location different to the HA server. Can be entered in unix Country/Area format (i.e. "Australia/Sydney")
+  timezone: "Europe/London"
+   # Set the duration between the sntp service polling ntp.org servers for an update
+  sntp_update_interval: 4h
+   # Network time servers for your region, enter from lowest to highest priority
+  sntp_server_1: "0.uk.pool.ntp.org"
+  sntp_server_2: "1.uk.pool.ntp.org"
+  sntp_server_3: "2.uk.pool.ntp.org"
+
+ ###############################
+# Network Settings
+#
+   # Enable or disable the use of IPv6 networking on the device
+  ipv6_enable: "false"
+
+##########################
+# Device Settings:
+#  
+   # Set the update interval for sensors  
+  sensor_update_interval: 10s   
+   # Define logging level: NONE, ERROR, WARN, INFO, DEBUG (Default), VERBOSE, VERY_VERBOSE
+  log_level: "DEBUG"
+
+esphome:
+  name: electriq-aircon
+  friendly_name: electriq-aircon
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    # replace {APIKEY} with your HA API key
+    key: {APIKEY}
+
+ota:
+  - platform: esphome
+    # replace {OTA_PASSWORD} with esphome OTA password
+    password: {OTA_PASSWORD}
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  min_auth_mode: wpa2
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    # replace {AP_SSID} and {AP_PASSWORD} with ssid and password to be used with captive portal
+    ssid: {AP_SSID}
+    password: {AP_PASSWORD}
+
+captive_portal:
+
+   # Enable local webserver on ESP Device
+web_server:
+   # TCP Port the webserver operates upon
+  port: 80
+   # Webserver version (default is 2).
+  version: 3
+##########################################################################
+#
+# Buttons - To trigger actions, such as reboot, reset
+#
+
+button:
+  - platform: restart
+    name: 'Restart Device'
+    entity_category: config
+    web_server:
+      sorting_weight: 45
+
+  - platform: safe_mode
+    name: "Safe Mode"
+    internal: false
+    entity_category: config
+    web_server:
+      sorting_weight: 46
+
+  - platform: factory_reset
+    name: Reset - Factory Default
+    id: Reset
+    entity_category: config
+    web_server:
+      sorting_weight: 47
+
+##########################################################################
+#
+# Text Sensors
+#
+
+text_sensor:
+
+  # Creates a sensor showing when the device was last restarted
+  - platform: template
+    name: 'Device Last Restart'
+    id: device_last_restart
+    icon: mdi:clock
+    entity_category: diagnostic
+    web_server:
+      sorting_weight: 37
+
+  #  Creates a sensor showing power circuit / phase of the device
+  - platform: template
+    name: 'Power Circuit'
+    id: power_circuit
+    icon: "mdi:electric-switch"
+    entity_category: diagnostic
+    lambda: |-
+      return {"${power_circuit}"};
+#    update_interval: 1h
+    web_server:
+      sorting_weight: 38
+
+   # Creates a sensor of the name of installed project
+  - platform: template
+    name: 'Project Name'
+    id: project_name
+    icon: "mdi:label-outline"
+    entity_category: diagnostic
+    lambda: |-
+      return {"${project_name}"};
+#    update_interval: 1h
+    web_server:
+      sorting_weight: 39
+
+   # Creates a sensor of the version of installed project
+  - platform: template
+    name: 'Project Version'
+    id: project_version
+    icon: "mdi:label-outline"
+    entity_category: diagnostic
+    lambda: |-
+      return {"${project_version}"};
+#    update_interval: 1h
+    web_server:
+      sorting_weight: 40
+
+   # Updates the system time using SNTP. Upon boot also publishes when the device was started.
+time:
+  - platform: sntp
+    id: sntp_time
+  # Define the timezone of the device
+    timezone: "${timezone}"
+  # Change sync interval from default 5min
+    update_interval: ${sntp_update_interval}
+  # Set specific sntp servers to use
+    servers: 
+      - "${sntp_server_1}"
+      - "${sntp_server_2}"
+      - "${sntp_server_3}"
+  # Publish the time the device was last restarted
+    on_time_sync:
+      then:
+        # Update last restart time, but only once.
+        - if:
+            condition:
+              lambda: 'return id(device_last_restart).state == "";'
+            then:
+              - text_sensor.template.publish:
+                  id: device_last_restart
+                  state: !lambda 'return id(sntp_time).now().strftime("%a %d %b %Y - %I:%M:%S %p");'
+        # Log a message when the time is synchronized
+        - logger.log:
+            format: "SNTP: Synchronized system clock"
+
+uart:
+  tx_pin: GPIO21
+  rx_pin: GPIO20
+  baud_rate: 9600  
+    
+tuya:
+
+climate:
+  - platform: tuya
+    name: "electriQ eIQ-12WMINV v5"
+    switch_datapoint: 1
+    target_temperature_datapoint: 2
+    current_temperature_datapoint: 3
+    supports_heat: true
+    supports_cool: true
+    active_state:
+      datapoint: 4
+      cooling_value: 0
+      heating_value: 1
+      drying_value: 2
+      fanonly_value: 3
+    fan_mode: 
+      datapoint: 5
+      auto_value: 0
+      low_value: 2
+      medium_value: 3
+      high_value: 4
+    preset:
+      eco:
+        datapoint: 8
+      sleep:
+        datapoint: 101
+    swing_mode: 
+      vertical_datapoint: 106
+#      horizontal_datapoint: 107      
+    visual: 
+      min_temperature: 16 °C
+      max_temperature: 30 °C
+      temperature_step: 1 °C
+
+switch:
+  - platform: tuya
+    name: "Heat"
+    switch_datapoint: 12
+  - platform: tuya
+    name: "Health"
+    switch_datapoint: 102
+  - platform: tuya
+    name: "Clean"
+    switch_datapoint: 103
+  - platform: tuya
+    name: "Screen"
+    switch_datapoint: 104
+
+##########################################################################
+#
+# Sensors
+#
+
+sensor:
+   # Sensor uptime in seconds
+  - platform: uptime
+    name: "Uptime Seconds"
+    id: uptime_seconds
+    entity_category: diagnostic
+    update_interval: 10s
+    internal: true
+  - platform: "tuya"
+    name: "AC Measured Temperature"
+    sensor_datapoint: 3
+  - platform: "tuya"
+    name: "AC Setpoint"
+    sensor_datapoint: 2
+  # - "0 -> Cool"
+  # - "1 -> Heat"
+  # - "2 -> Dry"
+  # - "3 -> Fan"
+  - platform: "tuya"
+    name: "AC Mode"
+    sensor_datapoint: 4
+    accuracy_decimals: 0
+  # - 0 -> Low
+  # - 3 -> Med
+  # - 5 -> High
+  - platform: "tuya"
+    name: "AC Fan Speed"
+    sensor_datapoint: 5
+    accuracy_decimals: 0
+  # Create a sensor for the unknown datapoint bitmasks that returns hex to see if we can capture value changes
+  - platform: "tuya"
+    name: "BM1"
+    sensor_datapoint: 108
+  - platform: "tuya"
+    name: "BM2"
+    sensor_datapoint: 109
+  - platform: "tuya"
+    name: "BM3"
+    sensor_datapoint: 110    
+#########################################################################
+#
+# Binary Sensors
+#
+
+binary_sensor:
+  - platform: status
+    name: "Device Status"
+    id: device_status
+    entity_category: diagnostic
+    icon: "mdi:check-network-outline"
+    web_server:
+      sorting_weight: 35
+  - platform: "tuya"
+    name: "AC On"
+    sensor_datapoint: 1
+    
