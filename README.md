@@ -27,7 +27,8 @@ Back of the original board:
 
 ## ESPHome
 
-Use the example YAML, amending entries with {} tags.  If your unit has horizontal swing then uncomment the 107 datapoint. I've left the 3 bitmask bytes in place. I've never seen them change. Data point 108 is always 0xFF, 109 0x00 and 110 0x00.  Please let me know if you find out if they change and why.
+Use the example YAML, amending entries with {} tags.  If your unit has horizontal swing then uncomment the 107 datapoint. 
+There are 3 bitmask bytes which I've left in. I've never seen them change. Data point 108 is always 0xFF, 109 0x00 and 110 0x00.  Please let me know if you find out if they change and why.
 
 ## New board
 
