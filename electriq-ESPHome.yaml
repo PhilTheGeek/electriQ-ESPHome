@@ -11,7 +11,8 @@ substitutions:
   power_circuit: "1p"  
 
   project_name: "electriQ eIQ-12WMINV v5"
-  project_version: "1.0"
+  project_version: "1.1"
+  
 ###############################
 # Time Update Settings:
 #
@@ -80,6 +81,7 @@ web_server:
   port: 80
    # Webserver version (default is 2).
   version: 3
+  
 ##########################################################################
 #
 # Buttons - To trigger actions, such as reboot, reset
@@ -267,9 +269,11 @@ sensor:
     name: "AC Mode"
     sensor_datapoint: 4
     accuracy_decimals: 0
-  # - 0 -> Low
+  # - 0 -> Auto
+  # - 1 -> Turbo
+  # - 2 -> Low
   # - 3 -> Med
-  # - 5 -> High
+  # - 4 -> High
   - platform: "tuya"
     name: "AC Fan Speed"
     sensor_datapoint: 5
@@ -278,12 +282,16 @@ sensor:
   - platform: "tuya"
     name: "BM1"
     sensor_datapoint: 108
+    accuracy_decimals: 0
   - platform: "tuya"
     name: "BM2"
     sensor_datapoint: 109
+    accuracy_decimals: 0
   - platform: "tuya"
     name: "BM3"
     sensor_datapoint: 110    
+    accuracy_decimals: 0
+    
 #########################################################################
 #
 # Binary Sensors
