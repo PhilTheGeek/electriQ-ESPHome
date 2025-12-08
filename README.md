@@ -29,7 +29,6 @@ Back of the original board:
 
 Use the example YAML, amending entries with {} tags.  If your unit has horizontal swing then uncomment the 107 datapoint.  
 There are 3 bitmask bytes which I've left in. I've never seen them change. Data point 108 is always 0xFF, 109 0x00 and 110 0x00.  Please let me know if you find out if they change and why.  
-There's a turbo fan mode available but I can't work out how to set-up a custom fan mode to enable it.
 
 ## New board
 
